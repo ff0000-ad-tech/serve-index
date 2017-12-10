@@ -174,6 +174,7 @@ serveIndex.html = function _html(req, res, files, next, dir, showUp, icons, path
 
   if (showUp) {
     files.unshift('..')
+    files.unshift('.')
   }
 
   // stat all files
@@ -257,11 +258,11 @@ function createHtmlFileList(files, dir, useIcons, view) {
       })
       var actions = ''
       const openInFinder =
-        `<span class="icon-open-in-finder" ` +
+        `<span class="icon-open-in-finder" title="Open Directory" ` +
         `onclick="event.stopImmediatePropagation(); try { window.openInFinder('${dir +
           file.name}')} catch(e) {}"></span>`
       const editInApp =
-        `<span class="icon-edit-in-app" ` +
+        `<span class="icon-edit-in-app" title="Edit File"` +
         `onclick="event.stopImmediatePropagation(); try { window.editInApp('${dir + file.name}')} catch(e) {}"></span>`
 
       if (useIcons) {
@@ -280,7 +281,7 @@ function createHtmlFileList(files, dir, useIcons, view) {
           if (classes.indexOf(icon.className) === -1) {
             classes.push(icon.className)
           }
-          actions = openInFinder + editInApp
+          actions = editInApp
         }
       }
 
@@ -288,11 +289,18 @@ function createHtmlFileList(files, dir, useIcons, view) {
 
       var date = file.stat && file.name !== '..' ? moment(file.stat.mtime).from(Date.now()) : ''
       var size = file.stat && !isDir ? prettyBytes(file.stat.size) : ''
+      var title = file.name
+      if (title === '.') {
+        title = 'This directory'
+      }
+      if (title === '..') {
+        title = 'Up one directory'
+      }
 
       return (
         `<li><a class="${escapeHtml(classes.join(' '))}"` +
         ' title="' +
-        escapeHtml(file.name) +
+        escapeHtml(title) +
         `" onclick="location.href='` +
         escapeHtml(normalizeSlashes(normalize(path.join('/')))) +
         `'">` +
@@ -350,9 +358,10 @@ function createHtmlRender(template) {
  */
 
 function fileSort(a, b) {
-  // sort ".." to the top
-  if (a.name === '..' || b.name === '..') {
-    return a.name === b.name ? 0 : a.name === '..' ? -1 : 1
+  // sort ".." and "." to the top
+  const nav = ['.', '..']
+  if (nav.indexOf(a.name) > -1 || nav.indexOf(b.name) > -1) {
+    return a.name === b.name ? 0 : nav.indexOf(a.name) > -1 ? -1 : 1
   }
 
   return (
@@ -459,7 +468,6 @@ function iconStyle(files, useIcons) {
 
     var isDir = file.stat && file.stat.isDirectory()
     var icon = isDir ? {className: 'icon-directory', fileName: icons.folder} : iconLookup(file.name)
-    log(icon)
     var iconName = icon.fileName
 
     selector = '#files .' + icon.className + ' .name'
