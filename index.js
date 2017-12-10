@@ -172,10 +172,10 @@ function serveIndex(root, options) {
 serveIndex.html = function _html(req, res, files, next, dir, showUp, icons, path, view, template, stylesheet) {
   var render = typeof template !== 'function' ? createHtmlRender(template) : template
 
-  files.unshift('.')
   if (showUp) {
     files.unshift('..')
   }
+  files.unshift('.')
 
   // stat all files
   stat(path, files, function(err, stats) {
