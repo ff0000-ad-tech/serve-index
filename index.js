@@ -27,6 +27,8 @@ var Batch = require('batch')
 var mime = require('mime-types')
 var parseUrl = require('parseurl')
 var resolve = require('path').resolve
+const prettyBytes = require('pretty-bytes')
+const moment = require('moment')
 
 const log = require('debug').debug('serve-index')
 
@@ -284,11 +286,8 @@ function createHtmlFileList(files, dir, useIcons, view) {
 
       path.push(encodeURIComponent(file.name))
 
-      var date =
-        file.stat && file.name !== '..'
-          ? file.stat.mtime.toLocaleDateString() + ' ' + file.stat.mtime.toLocaleTimeString()
-          : ''
-      var size = file.stat && !isDir ? file.stat.size : ''
+      var date = file.stat && file.name !== '..' ? moment(file.stat.mtime).from(Date.now()) : ''
+      var size = file.stat && !isDir ? prettyBytes(file.stat.size) : ''
 
       return (
         `<li><a class="${escapeHtml(classes.join(' '))}"` +
@@ -307,7 +306,7 @@ function createHtmlFileList(files, dir, useIcons, view) {
         '<span class="size">' +
         escapeHtml(size) +
         '</span>' +
-        '<span class="date">' +
+        '<span class="date modified">' +
         escapeHtml(date) +
         '</span>' +
         '</div>' +
