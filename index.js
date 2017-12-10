@@ -238,9 +238,11 @@ function createHtmlFileList(files, dir, useIcons, view) {
     (view == 'details'
       ? '<li class="header">' +
         '<span class="name">Name</span>' +
+        '<div class="right">' +
+        '<span class="actions">Actions</span>' +
         '<span class="size">Size</span>' +
         '<span class="date">Modified</span>' +
-        '<span class="actions">Actions</span>' +
+        '</div>' +
         '</li>'
       : '')
 
@@ -251,12 +253,21 @@ function createHtmlFileList(files, dir, useIcons, view) {
       var path = dir.split('/').map(function(c) {
         return encodeURIComponent(c)
       })
+      var actions = ''
+      const openInFinder =
+        `<span class="icon-open-in-finder" ` +
+        `onclick="event.stopImmediatePropagation(); try { window.openInFinder('${dir +
+          file.name}')} catch(e) {}"></span>`
+      const editInApp =
+        `<span class="icon-edit-in-app" ` +
+        `onclick="event.stopImmediatePropagation(); try { window.editInApp('${dir + file.name}')} catch(e) {}"></span>`
 
       if (useIcons) {
         classes.push('icon')
 
         if (isDir) {
           classes.push('icon-directory')
+          actions = openInFinder
         } else {
           var ext = extname(file.name)
           var icon = iconLookup(file.name)
@@ -267,6 +278,7 @@ function createHtmlFileList(files, dir, useIcons, view) {
           if (classes.indexOf(icon.className) === -1) {
             classes.push(icon.className)
           }
+          actions = openInFinder + editInApp
         }
       }
 
@@ -279,27 +291,28 @@ function createHtmlFileList(files, dir, useIcons, view) {
       var size = file.stat && !isDir ? file.stat.size : ''
 
       return (
-        '<li><a href="' +
-        escapeHtml(normalizeSlashes(normalize(path.join('/')))) +
-        '" class="' +
-        escapeHtml(classes.join(' ')) +
-        '"' +
+        `<li><a class="${escapeHtml(classes.join(' '))}"` +
         ' title="' +
         escapeHtml(file.name) +
-        '">' +
+        `" onclick="location.href='` +
+        escapeHtml(normalizeSlashes(normalize(path.join('/')))) +
+        `'">` +
         '<span class="name">' +
         escapeHtml(file.name) +
         '</span>' +
+        '<div class="right">' +
+        '<div class="actions">' +
+        actions +
+        '</div>' +
         '<span class="size">' +
         escapeHtml(size) +
         '</span>' +
         '<span class="date">' +
         escapeHtml(date) +
         '</span>' +
-        '<span class="actions">' +
-        '<div class="finder"></div>' +
-        '</span>' +
-        '</a></li>'
+        '</div>' +
+        '</a>' +
+        '</li>'
       )
     })
     .join('\n')
@@ -447,6 +460,7 @@ function iconStyle(files, useIcons) {
 
     var isDir = file.stat && file.stat.isDirectory()
     var icon = isDir ? {className: 'icon-directory', fileName: icons.folder} : iconLookup(file.name)
+    log(icon)
     var iconName = icon.fileName
 
     selector = '#files .' + icon.className + ' .name'
@@ -466,6 +480,24 @@ function iconStyle(files, useIcons) {
     iconName = list[i]
     style += selectors[iconName].join(',\n') + ' {\n  ' + rules[iconName] + '\n}\n'
   }
+
+  // add actions icons
+  style +=
+    `.actions:after {` +
+    `clear: both;` +
+    `}` +
+    `.actions > span {` +
+    `margin: 0 12px;` +
+    `width: 16px;` +
+    `height: 16px;` +
+    `opacity: 0.5;` +
+    `}` +
+    `.icon-edit-in-app {` +
+    `background-image: url(data:image/png;base64,${load('edit_in_app.png')});` +
+    `}` +
+    `.icon-open-in-finder {` +
+    `background-image: url(data:image/png;base64,${load('open_in_finder.png')});` +
+    `}`
 
   return style
 }
