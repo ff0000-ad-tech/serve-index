@@ -240,7 +240,7 @@ function createHtmlFileList(files, dir, useIcons, view) {
     '">' +
     (view == 'details'
       ? '<li class="header">' +
-        '<span class="name">Name</span>' +
+        '<div class="name">Name</div>' +
         '<div class="right">' +
         '<span class="actions">Actions</span>' +
         '<span class="size">Size</span>' +
