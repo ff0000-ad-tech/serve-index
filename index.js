@@ -307,16 +307,16 @@ function createHtmlFileList(files, dir, useIcons, view) {
         '<span class="name">' +
         escapeHtml(file.name) +
         '</span>' +
-        '<div class="right">' +
-        '<div class="actions">' +
-        actions +
-        '</div>' +
-        '<span class="size">' +
-        escapeHtml(size) +
-        '</span>' +
-        '<span class="date modified">' +
-        escapeHtml(date) +
-        '</span>' +
+        '<div class="right clear-after">' +
+          '<div class="actions left">' +
+          actions +
+          '</div>' +
+          '<div class="size left">&nbsp;' +
+          escapeHtml(size) +
+          '</div>' +
+          '<div class="date modified left">' +
+          escapeHtml(date) +
+          '</div>' +
         '</div>' +
         '</a>' +
         '</li>'
