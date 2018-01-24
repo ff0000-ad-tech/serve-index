@@ -18,11 +18,11 @@ var createError = require('http-errors')
 var debug = require('debug')('serve-index')
 var escapeHtml = require('escape-html')
 var fs = require('fs'),
-  path = require('path'),
-  normalize = path.normalize,
-  sep = path.sep,
-  extname = path.extname,
-  join = path.join
+	path = require('path'),
+	normalize = path.normalize,
+	sep = path.sep,
+	extname = path.extname,
+	join = path.join
 var Batch = require('batch')
 var mime = require('mime-types')
 var parseUrl = require('parseurl')
@@ -64,9 +64,9 @@ var defaultStylesheet = join(__dirname, 'public', 'style.css')
 var mediaTypes = ['text/html', 'text/plain', 'application/json']
 
 var mediaType = {
-  'text/html': 'html',
-  'text/plain': 'plain',
-  'application/json': 'json'
+	'text/html': 'html',
+	'text/plain': 'plain',
+	'application/json': 'json'
 }
 
 /**
@@ -81,88 +81,88 @@ var mediaType = {
  */
 
 function serveIndex(root, options) {
-  var opts = options || {}
+	var opts = options || {}
 
-  // root required
-  if (!root) {
-    throw new TypeError('serveIndex() root path required')
-  }
+	// root required
+	if (!root) {
+		throw new TypeError('serveIndex() root path required')
+	}
 
-  // resolve root to absolute and normalize
-  var rootPath = normalize(resolve(root) + sep)
+	// resolve root to absolute and normalize
+	var rootPath = normalize(resolve(root) + sep)
 
-  var filter = opts.filter
-  var hidden = opts.hidden
-  var icons = opts.icons
-  var stylesheet = opts.stylesheet || defaultStylesheet
-  var template = opts.template || defaultTemplate
-  var view = opts.view || 'tiles'
+	var filter = opts.filter
+	var hidden = opts.hidden
+	var icons = opts.icons
+	var stylesheet = opts.stylesheet || defaultStylesheet
+	var template = opts.template || defaultTemplate
+	var view = opts.view || 'tiles'
 
-  return function(req, res, next) {
-    if (req.method !== 'GET' && req.method !== 'HEAD') {
-      res.statusCode = 'OPTIONS' === req.method ? 200 : 405
-      res.setHeader('Allow', 'GET, HEAD, OPTIONS')
-      res.setHeader('Content-Length', '0')
-      res.end()
-      return
-    }
+	return function(req, res, next) {
+		if (req.method !== 'GET' && req.method !== 'HEAD') {
+			res.statusCode = 'OPTIONS' === req.method ? 200 : 405
+			res.setHeader('Allow', 'GET, HEAD, OPTIONS')
+			res.setHeader('Content-Length', '0')
+			res.end()
+			return
+		}
 
-    // parse URLs
-    var url = parseUrl(req)
-    var originalUrl = parseUrl.original(req)
-    var dir = decodeURIComponent(url.pathname)
-    var originalDir = decodeURIComponent(originalUrl.pathname)
+		// parse URLs
+		var url = parseUrl(req)
+		var originalUrl = parseUrl.original(req)
+		var dir = decodeURIComponent(url.pathname)
+		var originalDir = decodeURIComponent(originalUrl.pathname)
 
-    // join / normalize from root dir
-    var path = normalize(join(rootPath, dir))
+		// join / normalize from root dir
+		var path = normalize(join(rootPath, dir))
 
-    // null byte(s), bad request
-    if (~path.indexOf('\0')) return next(createError(400))
+		// null byte(s), bad request
+		if (~path.indexOf('\0')) return next(createError(400))
 
-    // malicious path
-    if ((path + sep).substr(0, rootPath.length) !== rootPath) {
-      debug('malicious path "%s"', path)
-      return next(createError(403))
-    }
+		// malicious path
+		if ((path + sep).substr(0, rootPath.length) !== rootPath) {
+			debug('malicious path "%s"', path)
+			return next(createError(403))
+		}
 
-    // determine ".." display
-    var showUp = normalize(resolve(path) + sep) !== rootPath
+		// determine ".." display
+		var showUp = normalize(resolve(path) + sep) !== rootPath
 
-    // check if we have a directory
-    debug('stat "%s"', path)
-    fs.stat(path, function(err, stat) {
-      if (err && err.code === 'ENOENT') {
-        return next()
-      }
+		// check if we have a directory
+		debug('stat "%s"', path)
+		fs.stat(path, function(err, stat) {
+			if (err && err.code === 'ENOENT') {
+				return next()
+			}
 
-      if (err) {
-        err.status = err.code === 'ENAMETOOLONG' ? 414 : 500
-        return next(err)
-      }
+			if (err) {
+				err.status = err.code === 'ENAMETOOLONG' ? 414 : 500
+				return next(err)
+			}
 
-      if (!stat.isDirectory()) return next()
+			if (!stat.isDirectory()) return next()
 
-      // fetch files
-      debug('readdir "%s"', path)
-      fs.readdir(path, function(err, files) {
-        if (err) return next(err)
-        if (!hidden) files = removeHidden(files)
-        if (filter)
-          files = files.filter(function(filename, index, list) {
-            return filter(filename, index, list, path)
-          })
-        files.sort()
+			// fetch files
+			debug('readdir "%s"', path)
+			fs.readdir(path, function(err, files) {
+				if (err) return next(err)
+				if (!hidden) files = removeHidden(files)
+				if (filter)
+					files = files.filter(function(filename, index, list) {
+						return filter(filename, index, list, path)
+					})
+				files.sort()
 
-        // content-negotiation
-        var accept = accepts(req)
-        var type = accept.type(mediaTypes)
+				// content-negotiation
+				var accept = accepts(req)
+				var type = accept.type(mediaTypes)
 
-        // not acceptable
-        if (!type) return next(createError(406))
-        serveIndex[mediaType[type]](req, res, files, next, originalDir, showUp, icons, path, view, template, stylesheet)
-      })
-    })
-  }
+				// not acceptable
+				if (!type) return next(createError(406))
+				serveIndex[mediaType[type]](req, res, files, next, originalDir, showUp, icons, path, view, template, stylesheet)
+			})
+		})
+	}
 }
 
 /**
@@ -170,46 +170,46 @@ function serveIndex(root, options) {
  */
 
 serveIndex.html = function _html(req, res, files, next, dir, showUp, icons, path, view, template, stylesheet) {
-  var render = typeof template !== 'function' ? createHtmlRender(template) : template
+	var render = typeof template !== 'function' ? createHtmlRender(template) : template
 
-  if (showUp) {
-    files.unshift('..')
-  }
-  files.unshift('.')
+	if (showUp) {
+		files.unshift('..')
+	}
+	files.unshift('.')
 
-  // stat all files
-  stat(path, files, function(err, stats) {
-    if (err) return next(err)
+	// stat all files
+	stat(path, files, function(err, stats) {
+		if (err) return next(err)
 
-    // combine the stats into the file list
-    var fileList = files.map(function(file, i) {
-      return {name: file, stat: stats[i]}
-    })
+		// combine the stats into the file list
+		var fileList = files.map(function(file, i) {
+			return {name: file, stat: stats[i]}
+		})
 
-    // sort file list
-    fileList.sort(fileSort)
+		// sort file list
+		fileList.sort(fileSort)
 
-    // read stylesheet
-    fs.readFile(stylesheet, 'utf8', function(err, style) {
-      if (err) return next(err)
+		// read stylesheet
+		fs.readFile(stylesheet, 'utf8', function(err, style) {
+			if (err) return next(err)
 
-      // create locals for rendering
-      var locals = {
-        directory: dir,
-        displayIcons: Boolean(icons),
-        fileList: fileList,
-        path: path,
-        style: style,
-        viewName: view
-      }
+			// create locals for rendering
+			var locals = {
+				directory: dir,
+				displayIcons: Boolean(icons),
+				fileList: fileList,
+				path: path,
+				style: style,
+				viewName: view
+			}
 
-      // render html
-      render(locals, function(err, body) {
-        if (err) return next(err)
-        send(res, 'text/html', body)
-      })
-    })
-  })
+			// render html
+			render(locals, function(err, body) {
+				if (err) return next(err)
+				send(res, 'text/html', body)
+			})
+		})
+	})
 }
 
 /**
@@ -217,7 +217,7 @@ serveIndex.html = function _html(req, res, files, next, dir, showUp, icons, path
  */
 
 serveIndex.json = function _json(req, res, files) {
-  send(res, 'application/json', JSON.stringify(files))
+	send(res, 'application/json', JSON.stringify(files))
 }
 
 /**
@@ -225,7 +225,7 @@ serveIndex.json = function _json(req, res, files) {
  */
 
 serveIndex.plain = function _plain(req, res, files) {
-  send(res, 'text/plain', files.join('\n') + '\n')
+	send(res, 'text/plain', files.join('\n') + '\n')
 }
 
 /**
@@ -234,99 +234,98 @@ serveIndex.plain = function _plain(req, res, files) {
  */
 
 function createHtmlFileList(files, dir, useIcons, view) {
-  var html =
-    '<ul id="files" class="view-' +
-    escapeHtml(view) +
-    '">' +
-    (view == 'details'
-      ? '<li class="header">' +
-        '<div class="name">Name</div>' +
-        '<div class="right">' +
-        '<span class="actions">Actions</span>' +
-        '<span class="size">Size</span>' +
-        '<span class="date">Modified</span>' +
-        '</div>' +
-        '</li>'
-      : '')
+	var html =
+		'<ul id="files" class="view-' +
+		escapeHtml(view) +
+		'">' +
+		(view == 'details'
+			? '<li class="header">' +
+				'<div class="name">Name</div>' +
+				'<div class="right">' +
+				'<span class="actions">Actions</span>' +
+				'<span class="size">Size</span>' +
+				'<span class="date">Modified</span>' +
+				'</div>' +
+				'</li>'
+			: '')
 
-  html += files
-    .map(function(file) {
-      var classes = []
-      var isDir = file.stat && file.stat.isDirectory()
-      var path = dir.split('/').map(function(c) {
-        return encodeURIComponent(c)
-      })
-      var actions = ''
-      const openInFinder =
-        `<span class="icon-open-in-finder" title="Open Directory" ` +
-        `onclick="event.stopImmediatePropagation(); try { window.openInFinder('${dir +
-          file.name}')} catch(e) {}"></span>`
-      const editInApp =
-        `<span class="icon-edit-in-app" title="Edit File"` +
-        `onclick="event.stopImmediatePropagation(); try { window.editInApp('${dir + file.name}')} catch(e) {}"></span>`
+	html += files
+		.map(function(file) {
+			var classes = []
+			var isDir = file.stat && file.stat.isDirectory()
+			var path = dir.split('/').map(function(c) {
+				return encodeURIComponent(c)
+			})
+			var actions = ''
+			const openInFinder =
+				`<span class="icon-open-in-finder" title="Open Directory" ` +
+				`onclick="event.stopImmediatePropagation(); try { window.openInFinder('${dir + file.name}')} catch(e) {}"></span>`
+			const editInApp =
+				`<span class="icon-edit-in-app" title="Edit File"` +
+				`onclick="event.stopImmediatePropagation(); try { window.editInApp('${dir + file.name}')} catch(e) {}"></span>`
 
-      if (useIcons) {
-        classes.push('icon')
+			if (useIcons) {
+				classes.push('icon')
 
-        if (isDir) {
-          classes.push('icon-directory')
-          actions = openInFinder
-        } else {
-          var ext = extname(file.name)
-          var icon = iconLookup(file.name)
+				if (isDir) {
+					classes.push('icon-directory')
+					actions = openInFinder
+				} else {
+					var ext = extname(file.name)
+					var icon = iconLookup(file.name)
 
-          classes.push('icon')
-          classes.push('icon-' + ext.substring(1))
+					classes.push('icon')
+					classes.push('icon-' + ext.substring(1))
 
-          if (classes.indexOf(icon.className) === -1) {
-            classes.push(icon.className)
-          }
-          actions = editInApp
-        }
-      }
+					if (classes.indexOf(icon.className) === -1) {
+						classes.push(icon.className)
+					}
+					actions = editInApp
+				}
+			}
 
-      path.push(encodeURIComponent(file.name))
+			path.push(encodeURIComponent(file.name))
 
-      var date = file.stat && file.name !== '..' ? moment(file.stat.mtime).from(Date.now()) : ''
-      var size = file.stat && !isDir ? prettyBytes(file.stat.size) : ''
-      var title = file.name
-      if (title === '.') {
-        title = 'This directory'
-      }
-      if (title === '..') {
-        title = 'Up one directory'
-      }
+			var date = file.stat && file.name !== '..' ? moment(file.stat.mtime).from(Date.now()) : ''
+			var size = file.stat && !isDir ? prettyBytes(file.stat.size) : ''
+			var title = file.name
+			if (title === '.') {
+				title = 'This directory'
+			}
+			if (title === '..') {
+				title = 'Up one directory'
+			}
 
-      return (
-        `<li><a class="${escapeHtml(classes.join(' '))}"` +
-        ' title="' +
-        escapeHtml(title) +
-        `" onclick="location.href='` +
-        escapeHtml(normalizeSlashes(normalize(path.join('/')))) +
-        `'">` +
-        '<span class="name">' +
-        escapeHtml(file.name) +
-        '</span>' +
-        '<div class="right clear-after">' +
-          '<div class="actions icons left">' +
-          actions +
-          '</div>' +
-          '<div class="size bytes left">&nbsp;' +
-          escapeHtml(size) +
-          '</div>' +
-          '<div class="date modified left">' +
-          escapeHtml(date) +
-          '</div>' +
-        '</div>' +
-        '</a>' +
-        '</li>'
-      )
-    })
-    .join('\n')
+			return (
+				`<li><a class="${escapeHtml(classes.join(' '))}"` +
+				' title="' +
+				escapeHtml(title) +
+				`" onclick="location.href='` +
+				escapeHtml(normalizeSlashes(normalize(path.join('/')))) +
+				`'">` +
+				'<span class="name">' +
+				escapeHtml(file.name) +
+				'</span>' +
+				'<div class="right clear-after">' +
+				'<div class="actions icons left">' +
+				actions +
+				'</div>' +
+				'<div class="size bytes left">&nbsp;' +
+				escapeHtml(size) +
+				'</div>' +
+				'<div class="date modified left">' +
+				escapeHtml(date) +
+				'</div>' +
+				'</div>' +
+				'</a>' +
+				'</li>'
+			)
+		})
+		.join('\n')
 
-  html += '</ul>'
+	html += '</ul>'
 
-  return html
+	return html
 }
 
 /**
@@ -334,23 +333,20 @@ function createHtmlFileList(files, dir, useIcons, view) {
  */
 
 function createHtmlRender(template) {
-  return function render(locals, callback) {
-    // read template
-    fs.readFile(template, 'utf8', function(err, str) {
-      if (err) return callback(err)
+	return function render(locals, callback) {
+		// read template
+		fs.readFile(template, 'utf8', function(err, str) {
+			if (err) return callback(err)
 
-      var body = str
-        .replace(/\{style\}/g, locals.style.concat(iconStyle(locals.fileList, locals.displayIcons)))
-        .replace(
-          /\{files\}/g,
-          createHtmlFileList(locals.fileList, locals.directory, locals.displayIcons, locals.viewName)
-        )
-        .replace(/\{directory\}/g, escapeHtml(locals.directory))
-        .replace(/\{linked-path\}/g, htmlPath(locals.directory))
+			var body = str
+				.replace(/\{style\}/g, locals.style.concat(iconStyle(locals.fileList, locals.displayIcons)))
+				.replace(/\{files\}/g, createHtmlFileList(locals.fileList, locals.directory, locals.displayIcons, locals.viewName))
+				.replace(/\{directory\}/g, escapeHtml(locals.directory))
+				.replace(/\{linked-path\}/g, htmlPath(locals.directory))
 
-      callback(null, body)
-    })
-  }
+			callback(null, body)
+		})
+	}
 }
 
 /**
@@ -358,18 +354,18 @@ function createHtmlRender(template) {
  */
 
 function fileSort(a, b) {
-  // sort ".." and "." to the top
-  const nav = ['.', '..']
-  if (nav.indexOf(a.name) > -1 || nav.indexOf(b.name) > -1) {
-    return a.name === b.name ? 0 : nav.indexOf(a.name) > -1 ? -1 : 1
-  }
+	// sort ".." and "." to the top
+	const nav = ['.', '..']
+	if (nav.indexOf(a.name) > -1 || nav.indexOf(b.name) > -1) {
+		return a.name === b.name ? 0 : nav.indexOf(a.name) > -1 ? -1 : 1
+	}
 
-  return (
-    Number(b.stat && b.stat.isDirectory()) - Number(a.stat && a.stat.isDirectory()) ||
-    String(a.name)
-      .toLocaleLowerCase()
-      .localeCompare(String(b.name).toLocaleLowerCase())
-  )
+	return (
+		Number(b.stat && b.stat.isDirectory()) - Number(a.stat && a.stat.isDirectory()) ||
+		String(a.name)
+			.toLocaleLowerCase()
+			.localeCompare(String(b.name).toLocaleLowerCase())
+	)
 }
 
 /**
@@ -377,19 +373,19 @@ function fileSort(a, b) {
  */
 
 function htmlPath(dir) {
-  var parts = dir.split('/')
-  var crumb = new Array(parts.length)
+	var parts = dir.split('/')
+	var crumb = new Array(parts.length)
 
-  for (var i = 0; i < parts.length; i++) {
-    var part = parts[i]
+	for (var i = 0; i < parts.length; i++) {
+		var part = parts[i]
 
-    if (part) {
-      parts[i] = encodeURIComponent(part)
-      crumb[i] = '<a href="' + escapeHtml(parts.slice(0, i + 1).join('/')) + '">' + escapeHtml(part) + '</a>'
-    }
-  }
+		if (part) {
+			parts[i] = encodeURIComponent(part)
+			crumb[i] = '<a href="' + escapeHtml(parts.slice(0, i + 1).join('/')) + '">' + escapeHtml(part) + '</a>'
+		}
+	}
 
-  return crumb.join(' / ')
+	return crumb.join(' / ')
 }
 
 /**
@@ -397,57 +393,57 @@ function htmlPath(dir) {
  */
 
 function iconLookup(filename) {
-  var ext = extname(filename)
+	var ext = extname(filename)
 
-  // try by extension
-  if (icons[ext]) {
-    return {
-      className: 'icon-' + ext.substring(1),
-      fileName: icons[ext]
-    }
-  }
+	// try by extension
+	if (icons[ext]) {
+		return {
+			className: 'icon-' + ext.substring(1),
+			fileName: icons[ext]
+		}
+	}
 
-  var mimetype = mime.lookup(ext)
+	var mimetype = mime.lookup(ext)
 
-  // default if no mime type
-  if (mimetype === false) {
-    return {
-      className: 'icon-default',
-      fileName: icons.default
-    }
-  }
+	// default if no mime type
+	if (mimetype === false) {
+		return {
+			className: 'icon-default',
+			fileName: icons.default
+		}
+	}
 
-  // try by mime type
-  if (icons[mimetype]) {
-    return {
-      className: 'icon-' + mimetype.replace('/', '-'),
-      fileName: icons[mimetype]
-    }
-  }
+	// try by mime type
+	if (icons[mimetype]) {
+		return {
+			className: 'icon-' + mimetype.replace('/', '-'),
+			fileName: icons[mimetype]
+		}
+	}
 
-  var suffix = mimetype.split('+')[1]
+	var suffix = mimetype.split('+')[1]
 
-  if (suffix && icons['+' + suffix]) {
-    return {
-      className: 'icon-' + suffix,
-      fileName: icons['+' + suffix]
-    }
-  }
+	if (suffix && icons['+' + suffix]) {
+		return {
+			className: 'icon-' + suffix,
+			fileName: icons['+' + suffix]
+		}
+	}
 
-  var type = mimetype.split('/')[0]
+	var type = mimetype.split('/')[0]
 
-  // try by type only
-  if (icons[type]) {
-    return {
-      className: 'icon-' + type,
-      fileName: icons[type]
-    }
-  }
+	// try by type only
+	if (icons[type]) {
+		return {
+			className: 'icon-' + type,
+			fileName: icons[type]
+		}
+	}
 
-  return {
-    className: 'icon-default',
-    fileName: icons.default
-  }
+	return {
+		className: 'icon-default',
+		fileName: icons.default
+	}
 }
 
 /**
@@ -455,58 +451,58 @@ function iconLookup(filename) {
  */
 
 function iconStyle(files, useIcons) {
-  if (!useIcons) return ''
-  var i
-  var list = []
-  var rules = {}
-  var selector
-  var selectors = {}
-  var style = ''
+	if (!useIcons) return ''
+	var i
+	var list = []
+	var rules = {}
+	var selector
+	var selectors = {}
+	var style = ''
 
-  for (i = 0; i < files.length; i++) {
-    var file = files[i]
+	for (i = 0; i < files.length; i++) {
+		var file = files[i]
 
-    var isDir = file.stat && file.stat.isDirectory()
-    var icon = isDir ? {className: 'icon-directory', fileName: icons.folder} : iconLookup(file.name)
-    var iconName = icon.fileName
+		var isDir = file.stat && file.stat.isDirectory()
+		var icon = isDir ? {className: 'icon-directory', fileName: icons.folder} : iconLookup(file.name)
+		var iconName = icon.fileName
 
-    selector = '#files .' + icon.className + ' .name'
+		selector = '#files .' + icon.className + ' .name'
 
-    if (!rules[iconName]) {
-      rules[iconName] = 'background-image: url(data:image/png;base64,' + load(iconName) + ');'
-      selectors[iconName] = []
-      list.push(iconName)
-    }
+		if (!rules[iconName]) {
+			rules[iconName] = 'background-image: url(data:image/png;base64,' + load(iconName) + ');'
+			selectors[iconName] = []
+			list.push(iconName)
+		}
 
-    if (selectors[iconName].indexOf(selector) === -1) {
-      selectors[iconName].push(selector)
-    }
-  }
+		if (selectors[iconName].indexOf(selector) === -1) {
+			selectors[iconName].push(selector)
+		}
+	}
 
-  for (i = 0; i < list.length; i++) {
-    iconName = list[i]
-    style += selectors[iconName].join(',\n') + ' {\n  ' + rules[iconName] + '\n}\n'
-  }
+	for (i = 0; i < list.length; i++) {
+		iconName = list[i]
+		style += selectors[iconName].join(',\n') + ' {\n  ' + rules[iconName] + '\n}\n'
+	}
 
-  // add actions icons
-  style +=
-    `.actions:after {` +
-    `clear: both;` +
-    `}` +
-    `.actions > span {` +
-    `margin: 0 12px;` +
-    `width: 16px;` +
-    `height: 16px;` +
-    `opacity: 0.5;` +
-    `}` +
-    `.icon-edit-in-app {` +
-    `background-image: url(data:image/png;base64,${load('edit_in_app.png')});` +
-    `}` +
-    `.icon-open-in-finder {` +
-    `background-image: url(data:image/png;base64,${load('open_in_finder.png')});` +
-    `}`
+	// add actions icons
+	style +=
+		`.actions:after {` +
+		`clear: both;` +
+		`}` +
+		`.actions > span {` +
+		`margin: 0 12px;` +
+		`width: 16px;` +
+		`height: 16px;` +
+		`opacity: 0.5;` +
+		`}` +
+		`.icon-edit-in-app {` +
+		`background-image: url(data:image/png;base64,${load('edit_in_app.png')});` +
+		`}` +
+		`.icon-open-in-finder {` +
+		`background-image: url(data:image/png;base64,${load('open_in_finder.png')});` +
+		`}`
 
-  return style
+	return style
 }
 
 /**
@@ -518,8 +514,8 @@ function iconStyle(files, useIcons) {
  */
 
 function load(icon) {
-  if (cache[icon]) return cache[icon]
-  return (cache[icon] = fs.readFileSync(__dirname + '/public/icons/' + icon, 'base64'))
+	if (cache[icon]) return cache[icon]
+	return (cache[icon] = fs.readFileSync(__dirname + '/public/icons/' + icon, 'base64'))
 }
 
 /**
@@ -532,7 +528,7 @@ function load(icon) {
  */
 
 function normalizeSlashes(path) {
-  return path.split(sep).join('/')
+	return path.split(sep).join('/')
 }
 
 /**
@@ -545,9 +541,9 @@ function normalizeSlashes(path) {
  */
 
 function removeHidden(files) {
-  return files.filter(function(file) {
-    return '.' != file[0]
-  })
+	return files.filter(function(file) {
+		return '.' != file[0]
+	})
 }
 
 /**
@@ -556,15 +552,15 @@ function removeHidden(files) {
  */
 
 function send(res, type, body) {
-  // security header for content sniffing
-  res.setHeader('X-Content-Type-Options', 'nosniff')
+	// security header for content sniffing
+	res.setHeader('X-Content-Type-Options', 'nosniff')
 
-  // standard headers
-  res.setHeader('Content-Type', type + '; charset=utf-8')
-  res.setHeader('Content-Length', Buffer.byteLength(body, 'utf8'))
+	// standard headers
+	res.setHeader('Content-Type', type + '; charset=utf-8')
+	res.setHeader('Content-Length', Buffer.byteLength(body, 'utf8'))
 
-  // body
-  res.end(body, 'utf8')
+	// body
+	res.end(body, 'utf8')
 }
 
 /**
@@ -573,22 +569,22 @@ function send(res, type, body) {
  */
 
 function stat(dir, files, cb) {
-  var batch = new Batch()
+	var batch = new Batch()
 
-  batch.concurrency(10)
+	batch.concurrency(10)
 
-  files.forEach(function(file) {
-    batch.push(function(done) {
-      fs.stat(join(dir, file), function(err, stat) {
-        if (err && err.code !== 'ENOENT') return done(err)
+	files.forEach(function(file) {
+		batch.push(function(done) {
+			fs.stat(join(dir, file), function(err, stat) {
+				if (err && err.code !== 'ENOENT') return done(err)
 
-        // pass ENOENT as null stat, not error
-        done(null, stat || null)
-      })
-    })
-  })
+				// pass ENOENT as null stat, not error
+				done(null, stat || null)
+			})
+		})
+	})
 
-  batch.end(cb)
+	batch.end(cb)
 }
 
 /**
@@ -596,112 +592,112 @@ function stat(dir, files, cb) {
  */
 
 var icons = {
-  // base icons
-  default: 'page_white.png',
-  folder: 'folder.png',
+	// base icons
+	default: 'page_white.png',
+	folder: 'folder.png',
 
-  // generic mime type icons
-  image: 'image.png',
-  text: 'page_white_text.png',
-  video: 'film.png',
+	// generic mime type icons
+	image: 'image.png',
+	text: 'page_white_text.png',
+	video: 'film.png',
 
-  // generic mime suffix icons
-  '+json': 'page_white_code.png',
-  '+xml': 'page_white_code.png',
-  '+zip': 'box.png',
+	// generic mime suffix icons
+	'+json': 'page_white_code.png',
+	'+xml': 'page_white_code.png',
+	'+zip': 'box.png',
 
-  // specific mime type icons
-  'application/font-woff': 'font.png',
-  'application/javascript': 'page_white_code_red.png',
-  'application/json': 'page_white_code.png',
-  'application/msword': 'page_white_word.png',
-  'application/pdf': 'page_white_acrobat.png',
-  'application/postscript': 'page_white_vector.png',
-  'application/rtf': 'page_white_word.png',
-  'application/vnd.ms-excel': 'page_white_excel.png',
-  'application/vnd.ms-powerpoint': 'page_white_powerpoint.png',
-  'application/vnd.oasis.opendocument.presentation': 'page_white_powerpoint.png',
-  'application/vnd.oasis.opendocument.spreadsheet': 'page_white_excel.png',
-  'application/vnd.oasis.opendocument.text': 'page_white_word.png',
-  'application/x-7z-compressed': 'box.png',
-  'application/x-sh': 'application_xp_terminal.png',
-  'application/x-font-ttf': 'font.png',
-  'application/x-msaccess': 'page_white_database.png',
-  'application/x-shockwave-flash': 'page_white_flash.png',
-  'application/x-sql': 'page_white_database.png',
-  'application/x-tar': 'box.png',
-  'application/x-xz': 'box.png',
-  'application/xml': 'page_white_code.png',
-  'application/zip': 'box.png',
-  'image/svg+xml': 'page_white_vector.png',
-  'text/css': 'page_white_code.png',
-  'text/html': 'page_white_code.png',
-  'text/less': 'page_white_code.png',
+	// specific mime type icons
+	'application/font-woff': 'font.png',
+	'application/javascript': 'page_white_code_red.png',
+	'application/json': 'page_white_code.png',
+	'application/msword': 'page_white_word.png',
+	'application/pdf': 'page_white_acrobat.png',
+	'application/postscript': 'page_white_vector.png',
+	'application/rtf': 'page_white_word.png',
+	'application/vnd.ms-excel': 'page_white_excel.png',
+	'application/vnd.ms-powerpoint': 'page_white_powerpoint.png',
+	'application/vnd.oasis.opendocument.presentation': 'page_white_powerpoint.png',
+	'application/vnd.oasis.opendocument.spreadsheet': 'page_white_excel.png',
+	'application/vnd.oasis.opendocument.text': 'page_white_word.png',
+	'application/x-7z-compressed': 'box.png',
+	'application/x-sh': 'application_xp_terminal.png',
+	'application/x-font-ttf': 'font.png',
+	'application/x-msaccess': 'page_white_database.png',
+	'application/x-shockwave-flash': 'page_white_flash.png',
+	'application/x-sql': 'page_white_database.png',
+	'application/x-tar': 'box.png',
+	'application/x-xz': 'box.png',
+	'application/xml': 'page_white_code.png',
+	'application/zip': 'box.png',
+	'image/svg+xml': 'page_white_vector.png',
+	'text/css': 'page_white_code.png',
+	'text/html': 'page_white_code.png',
+	'text/less': 'page_white_code.png',
 
-  // other, extension-specific icons
-  '.accdb': 'page_white_database.png',
-  '.apk': 'box.png',
-  '.app': 'application_xp.png',
-  '.as': 'page_white_actionscript.png',
-  '.asp': 'page_white_code.png',
-  '.aspx': 'page_white_code.png',
-  '.bat': 'application_xp_terminal.png',
-  '.bz2': 'box.png',
-  '.c': 'page_white_c.png',
-  '.cab': 'box.png',
-  '.cfm': 'page_white_coldfusion.png',
-  '.clj': 'page_white_code.png',
-  '.cc': 'page_white_cplusplus.png',
-  '.cgi': 'application_xp_terminal.png',
-  '.cpp': 'page_white_cplusplus.png',
-  '.cs': 'page_white_csharp.png',
-  '.db': 'page_white_database.png',
-  '.dbf': 'page_white_database.png',
-  '.deb': 'box.png',
-  '.dll': 'page_white_gear.png',
-  '.dmg': 'drive.png',
-  '.docx': 'page_white_word.png',
-  '.erb': 'page_white_ruby.png',
-  '.exe': 'application_xp.png',
-  '.fnt': 'font.png',
-  '.gam': 'controller.png',
-  '.gz': 'box.png',
-  '.h': 'page_white_h.png',
-  '.ini': 'page_white_gear.png',
-  '.iso': 'cd.png',
-  '.jar': 'box.png',
-  '.java': 'page_white_cup.png',
-  '.jsp': 'page_white_cup.png',
-  '.lua': 'page_white_code.png',
-  '.lz': 'box.png',
-  '.lzma': 'box.png',
-  '.m': 'page_white_code.png',
-  '.map': 'map.png',
-  '.msi': 'box.png',
-  '.mv4': 'film.png',
-  '.otf': 'font.png',
-  '.pdb': 'page_white_database.png',
-  '.php': 'page_white_php.png',
-  '.pl': 'page_white_code.png',
-  '.pkg': 'box.png',
-  '.pptx': 'page_white_powerpoint.png',
-  '.psd': 'page_white_picture.png',
-  '.py': 'page_white_code.png',
-  '.rar': 'box.png',
-  '.rb': 'page_white_ruby.png',
-  '.rm': 'film.png',
-  '.rom': 'controller.png',
-  '.rpm': 'box.png',
-  '.sass': 'page_white_code.png',
-  '.sav': 'controller.png',
-  '.scss': 'page_white_code.png',
-  '.srt': 'page_white_text.png',
-  '.tbz2': 'box.png',
-  '.tgz': 'box.png',
-  '.tlz': 'box.png',
-  '.vb': 'page_white_code.png',
-  '.vbs': 'page_white_code.png',
-  '.xcf': 'page_white_picture.png',
-  '.xlsx': 'page_white_excel.png',
-  '.yaws': 'page_white_code.png'
+	// other, extension-specific icons
+	'.accdb': 'page_white_database.png',
+	'.apk': 'box.png',
+	'.app': 'application_xp.png',
+	'.as': 'page_white_actionscript.png',
+	'.asp': 'page_white_code.png',
+	'.aspx': 'page_white_code.png',
+	'.bat': 'application_xp_terminal.png',
+	'.bz2': 'box.png',
+	'.c': 'page_white_c.png',
+	'.cab': 'box.png',
+	'.cfm': 'page_white_coldfusion.png',
+	'.clj': 'page_white_code.png',
+	'.cc': 'page_white_cplusplus.png',
+	'.cgi': 'application_xp_terminal.png',
+	'.cpp': 'page_white_cplusplus.png',
+	'.cs': 'page_white_csharp.png',
+	'.db': 'page_white_database.png',
+	'.dbf': 'page_white_database.png',
+	'.deb': 'box.png',
+	'.dll': 'page_white_gear.png',
+	'.dmg': 'drive.png',
+	'.docx': 'page_white_word.png',
+	'.erb': 'page_white_ruby.png',
+	'.exe': 'application_xp.png',
+	'.fnt': 'font.png',
+	'.gam': 'controller.png',
+	'.gz': 'box.png',
+	'.h': 'page_white_h.png',
+	'.ini': 'page_white_gear.png',
+	'.iso': 'cd.png',
+	'.jar': 'box.png',
+	'.java': 'page_white_cup.png',
+	'.jsp': 'page_white_cup.png',
+	'.lua': 'page_white_code.png',
+	'.lz': 'box.png',
+	'.lzma': 'box.png',
+	'.m': 'page_white_code.png',
+	'.map': 'map.png',
+	'.msi': 'box.png',
+	'.mv4': 'film.png',
+	'.otf': 'font.png',
+	'.pdb': 'page_white_database.png',
+	'.php': 'page_white_php.png',
+	'.pl': 'page_white_code.png',
+	'.pkg': 'box.png',
+	'.pptx': 'page_white_powerpoint.png',
+	'.psd': 'page_white_picture.png',
+	'.py': 'page_white_code.png',
+	'.rar': 'box.png',
+	'.rb': 'page_white_ruby.png',
+	'.rm': 'film.png',
+	'.rom': 'controller.png',
+	'.rpm': 'box.png',
+	'.sass': 'page_white_code.png',
+	'.sav': 'controller.png',
+	'.scss': 'page_white_code.png',
+	'.srt': 'page_white_text.png',
+	'.tbz2': 'box.png',
+	'.tgz': 'box.png',
+	'.tlz': 'box.png',
+	'.vb': 'page_white_code.png',
+	'.vbs': 'page_white_code.png',
+	'.xcf': 'page_white_picture.png',
+	'.xlsx': 'page_white_excel.png',
+	'.yaws': 'page_white_code.png'
 }
