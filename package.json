@@ -6,9 +6,6 @@
   "description": "Serve directory listings",
   "version": "1.9.1",
   "scripts": {
-    "test": "mocha --reporter spec --bail --check-leaks test/",
-    "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks test/",
-    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
     "pub": "np"
   },
   "author": "Douglas Christopher Wilson <doug@somethingdoug.com>",
