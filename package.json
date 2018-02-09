@@ -1,7 +1,16 @@
 {
-  "name": "serve-index",
+  "name": "@ff0000-ad-tech/serve-index",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Serve directory listings",
   "version": "1.9.1",
+  "scripts": {
+    "test": "mocha --reporter spec --bail --check-leaks test/",
+    "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks test/",
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
+    "pub": "np"
+  },
   "author": "Douglas Christopher Wilson <doug@somethingdoug.com>",
   "license": "MIT",
   "repository": "expressjs/serve-index",
@@ -13,6 +22,7 @@
     "http-errors": "~1.6.2",
     "mime-types": "~2.1.17",
     "moment": "^2.19.3",
+    "np": "^2.19.0",
     "parseurl": "~1.3.2",
     "pretty-bytes": "^4.0.2"
   },
@@ -30,10 +40,5 @@
   ],
   "engines": {
     "node": ">= 0.8.0"
-  },
-  "scripts": {
-    "test": "mocha --reporter spec --bail --check-leaks test/",
-    "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks test/",
-    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/"
   }
 }
