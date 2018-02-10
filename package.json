@@ -4,7 +4,7 @@
     "access": "public"
   },
   "description": "Serve directory listings",
-  "version": "1.9.3",
+  "version": "1.9.4",
   "scripts": {
     "pub": "np"
   },
