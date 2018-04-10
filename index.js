@@ -15,7 +15,7 @@
 
 var accepts = require('accepts')
 var createError = require('http-errors')
-var debug = require('debug')('serve-index')
+var debug = require('@ff0000-ad-tech/debug')('serve-index')
 var escapeHtml = require('escape-html')
 var fs = require('fs'),
 	path = require('path'),
@@ -30,7 +30,7 @@ var resolve = require('path').resolve
 const prettyBytes = require('pretty-bytes')
 const moment = require('moment')
 
-const log = require('debug').debug('serve-index')
+const log = require('@ff0000-ad-tech/debug').debug('serve-index')
 
 /**
  * Module exports.
